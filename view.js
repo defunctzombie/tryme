@@ -82,8 +82,9 @@ app.get('/:user/:project/*', function(req, res, next) {
 var server;
 
 function start() {
-    server = app.listen(8080);
-    log.trace('server listening on %d', server.address().port);
+    server = app.listen(8080, function() {;
+        log.trace('server listening on %d', server.address().port);
+    });
 }
 
 return start();
