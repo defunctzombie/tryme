@@ -21,7 +21,6 @@
     "diffpatcher": "1.0.0",
     "npm-css": "0.2.0",
     "express": "3.0.6",
-    "browserify": "1.17.2",
     "book": "1.3.0",
     "bookrc": "0.0.1",
     "mkdirp": "0.3.4",
@@ -30,8 +29,9 @@
     "makeup": "0.0.1",
     "npm": "1.2.3",
     "marked": "0.2.7",
-    "ios-overlay": "git://github.com/shtylman/iOS-Overlay.git#a73299",
-    "spin": "git://github.com/shtylman/spin.js.git#00c03d"
+    "script": "git://github.com/shtylman/node-script#377947",
+    "spin": "git://github.com/shtylman/spin.js#00c03d",
+    "ios-overlay": "git://github.com/shtylman/iOS-Overlay#a73299"
   },
   "engines": {
     "node": "0.8.x"

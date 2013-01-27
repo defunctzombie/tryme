@@ -26,12 +26,23 @@ var Project = function(info) {
     // default status is init
     self.emit('status', 'init');
 
-    // start the cloning phase
-    // cloning also verifies up to date project
     self._clone();
 };
 
 Project.prototype.__proto__ = EventEmitter.prototype;
+
+Project.prototype.refresh = function() {
+    var self = this;
+
+    log.trace('refresh %s/%s', self.user, self.project);
+
+    // if we are not ready, user will attach to the current status
+    if (self.status !== 'ready') {
+        return;
+    }
+
+    self._clone();
+};
 
 // clone project
 Project.prototype._clone = function() {
@@ -44,11 +55,13 @@ Project.prototype._clone = function() {
     var tmp_path = path.join(self.tmpbase, self.user, self.project);
     self.path = tmp_path;
 
+    // already cloned
+    if (fs.existsSync(tmp_path)) {
+        return self._pull();
+    }
+
     log.trace('dest path: ' + tmp_path);
     mkdirp.sync(tmp_path);
-
-    // TODO(shtylman) if exists, whipe and update
-    // git clean -xdf && git reset --hard HEAD && git pull
 
     // get project from github
     var repo_url = 'git://github.com/' + path.join(self.user, self.project) + '.git';
@@ -58,16 +71,45 @@ Project.prototype._clone = function() {
 
     child.stdout.setEncoding('utf8');
     child.stdout.on('data', function(chunk) {
-        // emit events to client?
-        console.log(chunk);
+        log.trace('git %s', chunk);
     });
 
     child.stderr.setEncoding('utf8');
     child.stderr.on('data', function(chunk) {
-        console.log(chunk);
+        log.trace('git %s', chunk);
     });
 
     child.on('exit', function(code) {
+        // if code is not good, fail?
+        self._pull();
+    });
+};
+
+Project.prototype._pull = function() {
+    var self = this;
+    self.status = 'updating';
+    self.emit('status', self.status);
+
+    log.trace('updating %s/%s', self.user, self.project);
+
+    var opt = {
+        cwd: self.path
+    };
+
+    var args = ['pull'];
+    var git = spawn('git', ['pull'], opt);
+
+    git.stdout.setEncoding('utf8');
+    git.stdout.on('data', function(chunk) {
+        log.trace('git %s', chunk);
+    });
+
+    git.stderr.setEncoding('utf8');
+    git.stderr.on('data', function(chunk) {
+        log.trace('git %s', chunk);
+    });
+
+    git.on('exit', function(code) {
         // if code is not good, fail?
         self._install();
     });
@@ -86,30 +128,21 @@ Project.prototype._install = function() {
     });
 };
 
-// symlinking for examples
+// symlinking to self so examples can lookup properly
 Project.prototype._setup = function() {
     var self = this;
     log.trace('setup');
     self.status = 'setup';
     self.emit('status', self.status);
 
-    // setup the project router
-    // the router will handle the url requests for the project
+    var name = JSON.parse(fs.readFileSync(path.join(self.path, 'package.json'), 'utf8')).name;
+    var dest = path.join(self.path, 'node_modules', name);
 
-    self._ready();
-    return;
-
-    var name = JSON.parse(fs.readFileSync(self.path + '/package.json', 'utf8')).name;
-
-    mkdirp.sync(self.path + '/example/node_modules');
-    var dest = self.path + '/example/node_modules/' + name;
-
-    try {
+    if (!fs.existsSync(dest)) {
         fs.symlinkSync(self.path, dest);
-    } catch (e) {};
+    };
 
-    self.router = router(self.path + '/example');
-
+    return self._ready();
 };
 
 Project.prototype._ready = function() {
@@ -123,30 +156,27 @@ Project.prototype._ready = function() {
 Project.prototype.route = function(req, res, next) {
     var self = this;
 
-    // if not ready, then we certainly can't handle the request
+    // if not ready, then we only serve up the html page
     if (self.status !== 'ready') {
-        return next();
+        // non dir paths are ignored in the early phase
+        if (path.extname(req.path)) {
+            // TODO(shtylman) or just wait until project is loaded?
+            return next();
+        }
+
+        return res.sendfile(__dirname + '/static/index.html');
     }
 
     var full = path.join(self.path, req.path);
 
+    // if user request a directory, serve up the entry html page
     if (fs.existsSync(full) && fs.statSync(full).isDirectory()) {
-        return next();
+        if (req.prj) {
+            req.prj.refresh();
+        }
+
+        return res.sendfile(__dirname + '/static/index.html');
     }
-
-    var name = JSON.parse(fs.readFileSync(path.join(self.path, 'package.json'), 'utf8')).name;
-
-    var first = req.path.split('/')[1];
-    var subdir = path.join(self.path, first, 'node_modules');
-
-    if (!fs.existsSync(subdir)) {
-        fs.mkdirSync(subdir);
-    }
-
-    var dest = path.join(subdir, name);
-    try {
-        fs.symlinkSync(self.path, dest);
-    } catch (err) {};
 
     var dir = path.join(self.path, path.dirname(req.path));
 

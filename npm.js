@@ -17,7 +17,7 @@ var install = function(path, cb) {
 
     // npm.load doesn't actually do anything after the first load
     // we have it here just to avoid other state management elsewhere
-    npm.load({}, function (err, npm) {
+    npm.load({ loglevel: 'silent' }, function (err, npm) {
         if (err) {
             return log.error(err);
         }
@@ -27,15 +27,6 @@ var install = function(path, cb) {
 
         // override prefix so npm knows where we actually are
         npm.prefix = path;
-
-        /*
-        npm.registry.log.http = function(a) {
-            //console.log(a);
-        };
-        npm.registry.log.warn = function(a) {
-            //console.log(a);
-        };
-        */
 
         log.trace('npm cache %s', npm.cache);
         log.trace('npm prefix %s', npm.prefix);

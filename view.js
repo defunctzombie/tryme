@@ -27,19 +27,22 @@ app.use(express.favicon());
 app.use(enchilada(__dirname + '/static'));
 app.use('/css/style.css', makeup(__dirname + '/static/css/style.css'));
 app.use(express.static(__dirname + '/static'));
+
+app.use(function(req, res, next) {
+    var ext = path.extname(req.path);
+
+    // if a path doesn't terminate in a /, make it so!
+    if (!ext && req.path[req.path.length - 1] !== '/') {
+        return res.redirect(req.path + '/');
+    }
+
+    next();
+});
+
 app.use(app.router);
 
 // handle per project requests
 app.get('/:user/:project/*', function(req, res, next) {
-
-    // TODO(shtylman) this is a hack, in the future if a dir page
-    // has other dirs in it, show those in a list
-    if (fs.existsSync(tmpdir + req.path) && fs.statSync(tmpdir + req.path).isDirectory()) {
-        if (req.path[req.path.length - 1] !== '/') {
-
-            return res.redirect(req.path + '/');
-        }
-    }
 
     var user = req.param('user');
     var project = req.param('project');
@@ -67,6 +70,8 @@ app.get('/:user/:project/*', function(req, res, next) {
         sock.install(server, '/' + key + '/status');
     }
 
+    req.prj = prj;
+
     // strip the project url part from the path
     req.url = req.url.replace('/' + user + '/' + project, '');
 
@@ -74,32 +79,21 @@ app.get('/:user/:project/*', function(req, res, next) {
     prj.route(req, res, next);
 });
 
-// app init handler
-// returns the main app landing page
-// and triggers a project to start
-app.use(function(req, res, next) {
-    // if no extension, return the html file
-    var ext = path.extname(req.path);
-    if (ext) {
-        return next();
-    }
-    res.sendfile(__dirname + '/static/index.html');
-});
-
 var server;
 
 function start() {
     server = app.listen(8080);
+    log.trace('server listening on %d', server.address().port);
 }
 
-// always start off with a clean tmp dir
-var cmd = 'rm -rf ' + tmpdir + '/*';
-log.trace('cleanup : %s', cmd);
-exec(cmd, function(err, stdout, stderr) {
-    if (err) {
-        return log.panic(err);
-    }
+return start();
 
-    start();
-});
-
+// cleanup all project dirs
+function clean(cb) {
+    // always start off with a clean tmp dir
+    var cmd = 'rm -rf ' + tmpdir + '/*';
+    log.trace('cleanup : %s', cmd);
+    exec(cmd, function(err, stdout, stderr) {
+        cb(err);
+    });
+}
