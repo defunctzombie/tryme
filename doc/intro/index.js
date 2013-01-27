@@ -1,10 +1,6 @@
 
 /**
-# tryme
-
-A simple and powerful way to demo your code and documentation without getting caught up writing static html pages or boring static code.
-
-Just write your example using the some javascript and make it interactive! Try it by editing the code below.
+You are viewing an interactive page! Edit the javascript snippet below and see.
 */
 
 // change foo to whatever you want!
@@ -14,13 +10,17 @@ button.innerHTML = 'foo';
 button // =>
 
 /**
+# tryme
+
+tryme is a simple way to share interactive demos and examples for javascript widgets. Just point the url to any valid github project folder with some javascript and enjoy!
+
 ## demos
 
 Play around with some of these cool demos.
 
-* [typeahead](/shtylman/typeahead/example)
-* [spin.js](/shtylman/spin.js/example)
-* [ios-overlay](/shtylman/iOS-Overlay/example)
+* [typeahead](/shtylman/typeahead/example/)
+* [spin.js](/shtylman/spin.js/example/)
+* [ios-overlay](/shtylman/iOS-Overlay/example/)
 
 ## add your own!
 
@@ -34,7 +34,7 @@ Although you are free to just have comments in your javascript code, you can als
 */
 
 /**
-The source for this document can be found [here](). Check out the [tryme]() repo for the source to this whole project.
+This document is an interactive example found [here](https://github.com/shtylman/tryme/blob/master/doc/intro/index.js). Check out the [tryme](https://github.com/shtylman/tryme) repo for the source and more!
 */
 
 'that\'s all folks!' // =>
