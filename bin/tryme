@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+// simple server for previewing a single project
+// usage: tryme [options] /path/to/tryme/folder
+
+// builtin
+var path = require('path');
+
+// vendor
+var express = require('express');
+
+// local
+var router = require('../router');
+
+var wwwroot = path.resolve(process.cwd(), process.argv[2]);
+
+var app = express();
+
+// TODO(shtylman) make a nice logo
+app.use(express.favicon());
+app.use(express.static(__dirname + '/../static'));
+app.use(router(wwwroot));
+app.get('/', function(req, res) {
+    // TODO(shtylman) title on page for project
+    res.sendfile(__dirname + '/../static/index.html');
+});
+
+app.listen(8080);
+
+// vim: ft=javascript
