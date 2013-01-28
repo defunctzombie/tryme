@@ -164,7 +164,7 @@ Project.prototype.route = function(req, res, next) {
             return next();
         }
 
-        return res.sendfile(__dirname + '/static/index.html');
+        return res.sendfile(__dirname + '/views/index.html');
     }
 
     var full = path.join(self.path, req.path);
@@ -175,7 +175,7 @@ Project.prototype.route = function(req, res, next) {
             req.prj.refresh();
         }
 
-        return res.sendfile(__dirname + '/static/index.html');
+        return res.sendfile(__dirname + '/views/index.html');
     }
 
     var dir = path.join(self.path, path.dirname(req.path));

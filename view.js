@@ -46,6 +46,10 @@ app.use(function(req, res, next) {
 
 app.use(app.router);
 
+app.get('/', function(req, res) {
+    res.redirect('/shtylman/tryme/doc/intro/');
+});
+
 // handle per project requests
 app.get('/:user/:project/*', function(req, res, next) {
 
