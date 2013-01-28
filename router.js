@@ -11,39 +11,55 @@ var script = require('script');
 module.exports = function(wwwroot) {
     var router = new express.Router();
 
-    // remove the current dir path
-    // the base is used to synthesize a path for client side require
-    var base = wwwroot.replace(__dirname, '');
+    // main tryme app bundle
+    var bundle = new script.file(__dirname + '/main.js', {
+        main: true,
+        debug: true
+    });
+
+    var app_src;
 
     router.get('/tryme-main.js', function(req, res, next) {
-        var out = '';
+        if (app_src) {
+            return next();
+        }
 
-        var bundle = new script.file(__dirname + '/main.js', {
-            main: true,
-            debug: true
-        });
-
-        // add our example to the bundle so requires can be located
-        bundle.require(path.join(wwwroot + '/index.js'));
-
+        // generate main tryme app bundle
         bundle.generate(function(err, src) {
             if (err) {
                 return next(err);
             }
 
-            // add client require
-            src = script.client.toString() + '\n' + src;
+            app_src = script.client.toString() + '\n' + src;
+            next();
+        });
+    });
+
+    router.get('/tryme-main.js', function(req, res, next) {
+
+        // the module bundle will contain the code for our example
+        // this bundle has no main and is just for including the example code
+        var module_bundle = script.file(path.join(wwwroot + '/index.js'), {
+            debug: true
+        });
+
+        // add client require
+        var src = app_src;
+
+        module_bundle.generate(function(err, module_src) {
+            if (err) {
+                return next(err);
+            }
+
+            src += module_src;
 
             // here be dragons
-            // this is how we make require think that we are actually in
-            // our base path. Otherwise require looks up using the wrong path
+            // this is how we make require think that we are actually in /
+            // so that when we require from within our editor code it will work
             src += '\nvar orig = require;\n\
-                require = function(name) {\n\
-                    return orig.call({ _parent: {\n\
-                        path: \'' + base + '/\'\n\
-                    }}, name);\n\
-                };\
-            ';
+            require = function(name) {\
+                return orig.call({ _parent: {path: \'/\'}}, name);\
+            };';
 
             res.contentType('application/javascript');
             res.send(src);

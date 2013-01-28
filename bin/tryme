@@ -4,24 +4,46 @@
 
 // builtin
 var path = require('path');
+var fs = require('fs');
 
 // vendor
 var express = require('express');
+var makeup = require('makeup');
+var enchilada = require('enchilada');
 
 // local
 var router = require('../router');
 
+var base = path.resolve(__dirname + '/../');
 var wwwroot = path.resolve(process.cwd(), process.argv[2]);
+
+// get project path
+// get package.json path
+var pkg_path = wwwroot;
+
+if (!fs.existsSync(path.join(wwwroot, 'package.json'))) {
+    pkg_path = path.resolve(pkg_path, '..');
+}
+
+// TODO(shtylman) setup symlink to self
 
 var app = express();
 
 // TODO(shtylman) make a nice logo
 app.use(express.favicon());
-app.use(express.static(__dirname + '/../static'));
+app.use(enchilada(base + '/static'));
+app.use('/css/style.css', makeup(base + '/static/css/style.css'));
+app.use(express.static(base + '/static'));
 app.use(router(wwwroot));
+app.use(app.router);
+
 app.get('/', function(req, res) {
     // TODO(shtylman) title on page for project
-    res.sendfile(__dirname + '/../static/index.html');
+    res.sendfile('/views/local.html', { root: base });
+});
+
+app.use(function(err, req, res, next) {
+    res.send(err.stack);
 });
 
 app.listen(8080);
