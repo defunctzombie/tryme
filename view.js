@@ -103,3 +103,8 @@ function clean(cb) {
         cb(err);
     });
 }
+
+process.once('uncaughtException', function(err) {
+    log.panic(err);
+    setTimeout(process.exit.bind(process, -1), 500);
+});
