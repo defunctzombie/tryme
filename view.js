@@ -13,6 +13,7 @@ var shoe = require('shoe');
 // local
 var Project = require('./project');
 
+var kProduction = process.env.NODE_ENV === 'production';
 var tmpdir = __dirname + '/tmp';
 
 // shoe streams of projects we support
@@ -24,7 +25,11 @@ var app = express();
 app.use(express.favicon());
 
 // serve static resources
-app.use(enchilada(__dirname + '/static'));
+app.use(enchilada({
+    src: __dirname + '/static',
+    cache: kProduction,
+    compress: kProduction
+}));
 app.use('/css/style.css', makeup(__dirname + '/static/css/style.css'));
 app.use(express.static(__dirname + '/static'));
 
