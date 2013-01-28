@@ -18,6 +18,7 @@ tryme is a simple way to share interactive demos and examples for javascript wid
 
 Play around with some of these cool demos.
 
+* [piecon](/shtylman/piecon/example/)
 * [typeahead](/shtylman/typeahead/example/)
 * [spin.js](/shtylman/spin.js/example/)
 * [ios-overlay](/shtylman/iOS-Overlay/example/)
