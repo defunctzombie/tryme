@@ -82,8 +82,13 @@ app.get('/:user/:project/*', function(req, res, next) {
 var server;
 
 function start() {
-    server = app.listen(8080, function() {;
-        log.trace('server listening on %d', server.address().port);
+    server = app.listen(8080, function() {
+        // nodejitsu app server seems to break server.address()
+        // so we need to check that we got something we can use
+        var addr = server.address();
+        if (addr) {
+            log.trace('server listening on %d', addr.port);
+        }
     });
 }
 
