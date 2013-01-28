@@ -41,7 +41,7 @@ function init_editor(src) {
     value: src,
     electricChars: true,
     autofocus: true,
-    theme: "solarized dark",
+    theme: "solarized light",
     mode: "javascript",
     extraKeys: {
       "Tab": function indent(editor) {
