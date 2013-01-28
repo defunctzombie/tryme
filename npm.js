@@ -28,6 +28,10 @@ var install = function(path, cb) {
         // override prefix so npm knows where we actually are
         npm.prefix = path;
 
+        npm.registry.log.http = function(msg, foo) {
+            log.trace('npm: %s %s', msg, foo);
+        };
+
         log.trace('npm cache %s', npm.cache);
         log.trace('npm prefix %s', npm.prefix);
         log.trace('npm root %s', npm.root);
