@@ -9,14 +9,18 @@
 
     <!-- application style -->
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/css/js-editor.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+
+    <div id="js-editor">
+    </div>
 
     <script src=/codemirror/codemirror.js></script>
     <script src=/codemirror/mode/javascript.js></script>
 
-    <!-- load main app file -->
-    <script src="/tryme-main.js"></script>
+    <script id="src" type="text/orig">{{body}}</script>
+    <script>{{script}}</script>
   </body>
 </html>

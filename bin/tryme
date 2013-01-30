@@ -37,11 +37,6 @@ app.use(express.static(base + '/static'));
 app.use(router(wwwroot));
 app.use(app.router);
 
-app.get('/', function(req, res) {
-    // TODO(shtylman) title on page for project
-    res.sendfile('/views/local.html', { root: base });
-});
-
 app.use(function(err, req, res, next) {
     res.send(err.stack);
 });

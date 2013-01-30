@@ -29,6 +29,7 @@
     "makeup": "0.0.1",
     "npm": "1.2.3",
     "marked": "0.2.7",
+    "mime": "1.2.9",
     "script": "git://github.com/shtylman/node-script#377947",
     "spin": "git://github.com/shtylman/spin.js#00c03d",
     "ios-overlay": "git://github.com/shtylman/iOS-Overlay#a73299"

@@ -2,16 +2,28 @@ var Spinner = require('spin');
 var overlay = require('ios-overlay');
 var shoe = require('shoe');
 
-function fetch_files() {
-  var ss = document.createElement("link");
-  ss.type = "text/css";
-  ss.rel = "stylesheet";
-  ss.href = "style.css";
-  document.getElementsByTagName("head")[0].appendChild(ss);
+function xmlreq() {
+  if (window.XMLHttpRequest) {
+    return new XMLHttpRequest();
+  } else if (window.ActiveXObject) {
+    return new ActiveXObject("Microsoft.XMLHTTP");
+  }
+}
 
-  var script = document.createElement("script");
-  script.src = "tryme-main.js";
-  document.body.appendChild(script);
+function fetch_files() {
+
+  // request same document
+  // then replace!
+  var req = xmlreq();
+
+  req.onreadystatechange = function() {
+    if (req.readyState === 4) {
+      document.write(req.responseText);
+    }
+  }
+
+  req.open('GET', window.location, true);
+  req.send();
 
   status.hide();
 }

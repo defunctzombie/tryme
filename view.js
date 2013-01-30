@@ -50,9 +50,13 @@ app.get('/', function(req, res) {
     res.redirect('/shtylman/tryme/doc/intro/');
 });
 
+app.get('/:user/:project', function(req, res, next) {
+    req.url = req.url + '/';
+    next();
+});
+
 // handle per project requests
 app.get('/:user/:project/*', function(req, res, next) {
-
     var user = req.param('user');
     var project = req.param('project');
 

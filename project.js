@@ -151,6 +151,8 @@ Project.prototype._ready = function() {
     log.trace('ready');
     self.status = 'ready';
     self.emit('status', self.status);
+
+    self.router = router(self.path);
 };
 
 Project.prototype.route = function(req, res, next) {
@@ -158,32 +160,11 @@ Project.prototype.route = function(req, res, next) {
 
     // if not ready, then we only serve up the html page
     if (self.status !== 'ready') {
-        // non dir paths are ignored in the early phase
-        if (path.extname(req.path)) {
-            // TODO(shtylman) or just wait until project is loaded?
-            return next();
-        }
-
         return res.sendfile(__dirname + '/views/index.html');
     }
 
-    var full = path.join(self.path, req.path);
-
-    // if user request a directory, serve up the entry html page
-    if (fs.existsSync(full) && fs.statSync(full).isDirectory()) {
-        if (req.prj) {
-            req.prj.refresh();
-        }
-
-        return res.sendfile(__dirname + '/views/index.html');
-    }
-
-    var dir = path.join(self.path, path.dirname(req.path));
-
-    // TODO(shtylman) should not need to make router every time
-    // can be smarter about this
-    req.url = req.url.replace(path.dirname(req.path), '');
-    router(dir)(req, res, next);
+    req.url = req.url.replace(self.path, '');
+    self.router(req, res, next);
 };
 
 module.exports = Project;
