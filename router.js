@@ -186,14 +186,18 @@ module.exports = function(wwwroot) {
         });
 
         var src = blocks.join(';');
-        fs.writeFileSync(wwwroot + '/_README.md.js', src);
+        var tempjs = wwwroot + '/_README.md.js';
+        fs.writeFileSync(tempjs, src);
 
         var bundle = script.file(wwwroot + '/_README.md.js', {
             debug: true
         });
 
         bundle.generate(function(err, module_src) {
-            fs.unlinkSync(wwwroot + '/_README.md.js');
+            if (fs.existsSync(tempjs)) {
+                fs.unlinkSync(tempjs);
+            }
+
             if (err) {
                 return next(err);
             }
