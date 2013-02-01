@@ -182,6 +182,7 @@ module.exports = function(wwwroot) {
         });
 
         bundle.generate(function(err, module_src) {
+            fs.unlinkSync(wwwroot + '/_README.md.js');
             if (err) {
                 return next(err);
             }
