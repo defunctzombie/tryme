@@ -78,10 +78,22 @@ app.get('/:user/:project/*', function(req, res, next) {
     var hreq = https.get(opt, function(hres) {
         log.trace('http response for %s/%s -> %d', user, project,
                   hres.statusCode);
-        if (hres.statusCode !== 200) {
-            return res.send(404);
-        }
-        hres.on('end', next);
+
+        var body = '';
+        hres.on('data', function(chunk) {
+            body += chunk;
+        });
+
+        hres.on('end', function() {
+            var msg = JSON.parse(body);
+            if (msg.error) {
+                log.trace(msg.error);
+            }
+            if (hres.statusCode !== 200) {
+                return res.send(404);
+            }
+            next();
+        });
         hres.on('error', next);
     });
 
