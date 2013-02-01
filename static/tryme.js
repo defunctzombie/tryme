@@ -11,21 +11,11 @@ function xmlreq() {
 }
 
 function fetch_files() {
+  window.location.reload();
+  return;
 
-  // request same document
-  // then replace!
-  var req = xmlreq();
-
-  req.onreadystatechange = function() {
-    if (req.readyState === 4) {
-      document.write(req.responseText);
-    }
-  }
-
-  req.open('GET', window.location, true);
-  req.send();
-
-  status.hide();
+  // TODO(shtylman) we can just request the new page
+  // and swap it for this one
 }
 
 var opts = {
