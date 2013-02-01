@@ -8,6 +8,7 @@ var npmcss = require('npm-css');
 var script = require('script');
 var mime = require('mime');
 var marked = require('marked');
+var hljs = require('highlight.js');
 
 var main_md = script.file(__dirname + '/main_markdown.js', {
     debug: true,
@@ -157,12 +158,22 @@ module.exports = function(wwwroot) {
         var markdown = marked(src, {
             gfm: true,
             highlight: function(code, lang) {
+
+                function reg_highlight() {
+                    if (lang && hljs.LANGUAGES[lang]) {
+                        return hljs.highlight(lang, code).value;
+                    }
+                    else {
+                        return hljs.highlightAuto(code).value;
+                    }
+                }
+
                 if (lang !== 'javascript' && lang !== 'js') {
-                    return code;
+                    return reg_highlight();
                 }
 
                 if (code.indexOf('// =>') < 0) {
-                    return code;
+                    return reg_highlight();
                 }
 
                 count++;

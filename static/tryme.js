@@ -1,6 +1,6 @@
 var Spinner = require('spin');
 var overlay = require('ios-overlay');
-var shoe = require('shoe');
+var eio = require('engine.io-stream');
 
 function xmlreq() {
   if (window.XMLHttpRequest) {
@@ -56,7 +56,7 @@ var status = overlay({
 
 var prj_path = window.location.pathname.split(/\//).slice(0,3).join('/');
 
-var stream = shoe(prj_path + '/status');
+var stream = eio(prj_path + '/status');
 stream.on('data', function(chunk) {
   if (chunk === 'ready') {
     status.update({ text: 'loading assets' });

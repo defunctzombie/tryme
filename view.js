@@ -8,7 +8,7 @@ var express = require('express');
 var log = require('bookrc');
 var enchilada = require('enchilada');
 var makeup = require('makeup');
-var shoe = require('shoe');
+var eio = require('engine.io-stream');
 
 // local
 var Project = require('./project');
@@ -47,7 +47,7 @@ app.use(function(req, res, next) {
 app.use(app.router);
 
 app.get('/', function(req, res) {
-    res.redirect('/shtylman/tryme/doc/intro/');
+    res.redirect('/shtylman/tryme/');
 });
 
 app.get('/:user/:project', function(req, res, next) {
@@ -71,8 +71,7 @@ app.get('/:user/:project/*', function(req, res, next) {
             tmpbase: tmpdir
         });
 
-        // setup forward stream to notify client of progress
-        var sock = shoe(function(stream) {
+        var io = eio(function(stream) {
             stream.write(prj.status);
             prj.on('status', function(status) {
                 stream.write(status);
@@ -80,7 +79,7 @@ app.get('/:user/:project/*', function(req, res, next) {
         });
 
         // clients get project status info from this stream
-        sock.install(server, '/' + key + '/status');
+        io.attach(server, '/' + key + '/status');
     }
 
     req.prj = prj;

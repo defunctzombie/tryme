@@ -19,6 +19,7 @@ body {
     margin: 0px;
     display: inline-block;
     margin-bottom: 200px;
+    max-width: 750px;
 }
 
 .markdown {
@@ -28,7 +29,7 @@ body {
     padding: 3px;
     font-size: 14px;
     line-height: 1.6;
-    font: 13px Helvetica, arial, freesans, clean, sans-serif;
+    font: 14px Helvetica, arial, freesans, clean, sans-serif;
     border: 1px solid #CACACA;
     margin: 0px auto auto;
     padding: 0px 30px 0px 30px;
