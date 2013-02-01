@@ -2,6 +2,7 @@
 var path = require('path');
 var exec = require('child_process').exec;
 var fs = require('fs');
+var https = require('https');
 
 // vendor
 var express = require('express');
@@ -53,6 +54,23 @@ app.get('/', function(req, res) {
 app.get('/:user/:project', function(req, res, next) {
     req.url = req.url + '/';
     next();
+});
+
+app.get('/:user/:project/*', function(req, res, next) {
+    var opt = {
+        host: 'api.github.com',
+        path: '/repos/' + req.param('user') + '/' + req.param('project')
+    };
+
+    var hreq = https.get(opt, function(hres) {
+        if (hres.statusCode !== 200) {
+            return res.send(404);
+        }
+        hres.on('end', next);
+        hres.on('error', next);
+    });
+
+    hreq.on('error', next);
 });
 
 // handle per project requests
