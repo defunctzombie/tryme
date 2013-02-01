@@ -47,6 +47,11 @@ app.use(function(req, res, next) {
 
 app.use(app.router);
 
+app.use(function(err, req, res, next) {
+    log.error(err);
+    next(err);
+});
+
 app.get('/', function(req, res) {
     res.redirect('/shtylman/tryme/');
 });
@@ -57,12 +62,22 @@ app.get('/:user/:project', function(req, res, next) {
 });
 
 app.get('/:user/:project/*', function(req, res, next) {
+    var user = req.param('user');
+    var project = req.param('project');
+    var key = user + '/' + project;
+    var prj = projects[key]
+    if (prj) {
+        return next();
+    }
+
     var opt = {
         host: 'api.github.com',
-        path: '/repos/' + req.param('user') + '/' + req.param('project')
+        path: '/repos/' + user + '/' + project
     };
 
     var hreq = https.get(opt, function(hres) {
+        log.trace('http response for %s/%s -> %d', user, project,
+                  hres.statusCode);
         if (hres.statusCode !== 200) {
             return res.send(404);
         }
@@ -79,7 +94,6 @@ app.get('/:user/:project/*', function(req, res, next) {
     var project = req.param('project');
 
     var key = user + '/' + project;
-
     var prj = projects[key]
     if (!prj) {
         // setup a new project
