@@ -71,24 +71,15 @@ app.get('/:user/:project/*', function(req, res, next) {
     }
 
     var opt = {
-        host: 'api.github.com',
-        path: '/repos/' + user + '/' + project
+        host: 'github.com',
+        path: '/' + user + '/' + project
     };
 
     var hreq = https.get(opt, function(hres) {
         log.trace('http response for %s/%s -> %d', user, project,
                   hres.statusCode);
 
-        var body = '';
-        hres.on('data', function(chunk) {
-            body += chunk;
-        });
-
         hres.on('end', function() {
-            var msg = JSON.parse(body);
-            if (msg.error) {
-                log.trace(msg.error);
-            }
             if (hres.statusCode !== 200) {
                 return res.send(404);
             }
