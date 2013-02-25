@@ -16,6 +16,7 @@ button // =>
 
 Play around with some of these cool demos.
 
+* [d3-examples](http://tryme.jit.su/shtylman/d3-examples)
 * [piecon](http://tryme.jit.su/shtylman/piecon)
 * [spin.js](http://tryme.jit.su/shtylman/spin.js)
 * [typeahead](http://tryme.jit.su/shtylman/typeahead/example)
