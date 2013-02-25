@@ -34,6 +34,17 @@ app.use(express.favicon());
 app.use(enchilada(base + '/static'));
 app.use('/css/style.css', makeup(base + '/static/css/style.css'));
 app.use(express.static(base + '/static'));
+app.use(function(req, res, next) {
+    var ext = path.extname(req.path);
+
+    // if a path doesn't terminate in a /, make it so!
+    if (!ext && req.path[req.path.length - 1] !== '/') {
+        return res.redirect(req.path + '/');
+    }
+
+    next();
+});
+
 app.use(router(wwwroot));
 app.use(app.router);
 
