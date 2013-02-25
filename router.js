@@ -118,7 +118,8 @@ module.exports = function(wwwroot) {
         // the evaluation needs to happen inside of our require container
         var full_src = src + ';\n(' + server.toString() + ')();';
 
-        var tempjs = wwwroot + '/__tryme.temp.js';
+        // temp file must be in same folder for relative requires
+        var tempjs = path.dirname(full_path) + '/__tryme.temp.js';
         fs.writeFileSync(tempjs, full_src);
 
         var bundle = browserify(tempjs);
