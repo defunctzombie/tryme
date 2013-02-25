@@ -5,40 +5,12 @@ var path = require('path');
 // vendor
 var express = require('express');
 var npmcss = require('npm-css');
-var script = require('script');
+var browserify = require('browserify');
 var mime = require('mime');
 var marked = require('marked');
 var hljs = require('highlight.js');
 
-var main_md = script.file(__dirname + '/main_markdown.js', {
-    debug: true,
-    main: true
-});
-
-var main_js = script.file(__dirname + '/main_js.js', {
-    debug: true,
-    main: true
-});
-
-var client = script.client.toString();
-var js_main;
-var md_main;
-
-main_js.generate(function(err, src) {
-    if (err) {
-        throw err;
-    }
-
-    js_main = src;
-});
-
-main_md.generate(function(err, src) {
-    if (err) {
-        throw err;
-    }
-
-    md_main = src;
-});
+var main_js = browserify([__dirname + '/main_js.js']);
 
 // create a router for project files
 module.exports = function(wwwroot) {
@@ -122,25 +94,44 @@ module.exports = function(wwwroot) {
 
         var src = fs.readFileSync(full_path, 'utf8');
 
-        var bundle = script.file(full_path, {
-            debug: true
-        });
+        function server() {
+            // emit a `client` event on the window with the given packet object
+            function send(packet) {
+                var event = document.createEvent("CustomEvent")
+                event.initCustomEvent("client", false, true, packet)
+                window.dispatchEvent(event)
+            }
+            window.addEventListener("server", function(event) {
+                var packet = event.detail
+                var result
+                try {
+                    result = eval(packet.source)
+                }
+                catch (error) {
+                    result = error
+                }
+                send({ from: packet.to, message: result })
+            }, false);
+        };
 
-        bundle.generate(function(err, module_src) {
+        // insert code to evaluate source files and send back message
+        // the evaluation needs to happen inside of our require container
+        var full_src = src + ';\n(' + server.toString() + ')();';
+
+        var tempjs = wwwroot + '/__tryme.temp.js';
+        fs.writeFileSync(tempjs, full_src);
+
+        var bundle = browserify(tempjs);
+        bundle.bundle(function(err, module_src) {
+            if (fs.existsSync(tempjs)) {
+                fs.unlinkSync(tempjs);
+            }
+
             if (err) {
                 return next(err);
             }
 
-            var out = client + module_src + js_main;
-
-            // here be dragons
-            // this is how we make require think that we are actually in /
-            // so that when we require from within our editor code it will work
-            out += '\nvar orig = require;\n' +
-            'require = function(name) {\n' +
-                'return orig.call({ _parent: {path: \'/\'}}, name);' +
-            '\n};';
-
+            var out = module_src;
             html = html.replace('{{body}}', src).replace('{{script}}', out);
             return res.send(html);
         });
@@ -155,6 +146,7 @@ module.exports = function(wwwroot) {
 
         var count = 0;
         var blocks = [];
+        var evals = [];
         var markdown = marked(src, {
             gfm: true,
             highlight: function(code, lang) {
@@ -177,7 +169,10 @@ module.exports = function(wwwroot) {
                 }
 
                 count++;
-                blocks.push(code);
+                blocks.push(code + '\n');
+
+                // evaluators so code is run inside of the bundle
+                evals.push('make_block(' + count + ', function(src) { return eval(src); })');
 
                 return '</code></pre>' +
                     '<div><textarea style="display: none" class="code-block" id="code-block-' + count + '">' + code + '</textarea></div><div class="tryme-output" id="output-' + count + '"></div>' +
@@ -185,15 +180,12 @@ module.exports = function(wwwroot) {
             }
         });
 
-        var src = blocks.join(';');
-        var tempjs = wwwroot + '/_README.md.js';
+        var src = blocks.join(';\n') + evals.join(';\n');
+        var tempjs = wwwroot + '/__tryme.temp.js';
         fs.writeFileSync(tempjs, src);
 
-        var bundle = script.file(wwwroot + '/_README.md.js', {
-            debug: true
-        });
-
-        bundle.generate(function(err, module_src) {
+        var bundle = browserify(tempjs);
+        bundle.bundle(function(err, module_src) {
             if (fs.existsSync(tempjs)) {
                 fs.unlinkSync(tempjs);
             }
@@ -202,16 +194,7 @@ module.exports = function(wwwroot) {
                 return next(err);
             }
 
-            var out = client + module_src + md_main;
-
-            // here be dragons
-            // this is how we make require think that we are actually in /
-            // so that when we require from within our editor code it will work
-            out += '\nvar orig = require;\n' +
-            'require = function(name) {\n' +
-                'return orig.call({ _parent: {path: \'/\'}}, name);' +
-            '\n};';
-
+            var out = module_src;
             html = html.replace('{{body}}', markdown).replace('{{script}}', out);
             return res.send(html);
         });

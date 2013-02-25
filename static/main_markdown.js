@@ -8,14 +8,7 @@ function throttle(f, delay) {
     }
 }
 
-var blocks = document.querySelectorAll('.code-block');
-
-for (var i=0 ; i<blocks.length; ++i) {
-    var block = blocks[i];
-    make_block(i + 1);
-}
-
-function make_block(num) {
+function make_block(num, evaluator) {
     var input = document.querySelector('#code-block-' + num);
 
     var editor = CodeMirror.fromTextArea(input, {
@@ -31,7 +24,7 @@ function make_block(num) {
         var src = editor.getValue();
 
         try {
-            var res = eval(src);
+            var res = evaluator(src);
         } catch (err) {
             res = err.message;
         }
@@ -48,3 +41,5 @@ function make_block(num) {
     editor.setValue(editor.getValue());
     editor.refresh();
 }
+
+global.make_block = make_block;

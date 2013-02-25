@@ -14,7 +14,7 @@ function server() {
     var packet = event.detail
     var result
     try {
-      result = window.eval(packet.source)
+      result = eval(packet.source)
     }
     catch (error) {
       result = error

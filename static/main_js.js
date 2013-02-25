@@ -1,11 +1,7 @@
-var Editor = require("./core")
+var Editor = require("../core")
 
-var persist = require("./code-mirror/persist")
-var share = require("./code-mirror/share")
-var server = require("./server")
-
-// Start an evaluation server
-server()
+var persist = require("../code-mirror/persist")
+var share = require("../code-mirror/share")
 
 module.exports.init_editor = init_editor;
 
@@ -40,4 +36,3 @@ function init_editor(src) {
 
 var src = document.querySelector('#src').textContent;
 init_editor(src);
-
