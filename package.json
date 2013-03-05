@@ -30,7 +30,7 @@
     "marked": "0.2.7",
     "mime": "1.2.9",
     "highlight.js": "7.3.0",
-    "browserify": "2.2.5",
+    "browserify": "2.4.2",
     "engine.io-stream": "git://github.com/shtylman/engine.io-stream#0d5b07",
     "spin": "git://github.com/shtylman/spin.js#00c03d",
     "ios-overlay": "git://github.com/shtylman/iOS-Overlay#a73299"
