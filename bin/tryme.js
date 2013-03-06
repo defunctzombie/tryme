@@ -10,12 +10,14 @@ var fs = require('fs');
 var express = require('express');
 var makeup = require('makeup');
 var enchilada = require('enchilada');
+var argv = require('optimist').argv;
+var LiveReloadServer = require('live-reload');
 
 // local
 var router = require('../router');
 
 var base = path.resolve(__dirname + '/../');
-var wwwroot = path.resolve(process.cwd(), process.argv[2]);
+var wwwroot = path.resolve(process.cwd(), argv[2]);
 
 // get project path
 // get package.json path
@@ -45,7 +47,7 @@ app.use(function(req, res, next) {
     next();
 });
 
-app.use(router(wwwroot));
+app.use(router(wwwroot, argv));
 app.use(app.router);
 
 app.use(function(err, req, res, next) {
@@ -55,5 +57,13 @@ app.use(function(err, req, res, next) {
 var server = app.listen(8080, function() {
     console.log('listening on port', server.address().port);
 });
+
+if(argv.live) {
+    var LIVE_PORT = argv.live = argv.live === true ? 9968 : argv.live
+
+    LiveReloadServer({
+        port: LIVE_PORT
+    })
+}
 
 // vim: ft=javascript

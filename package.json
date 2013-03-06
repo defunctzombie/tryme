@@ -13,7 +13,7 @@
     "start": "node view.js"
   },
   "bin": {
-    "tryme": "bin/tryme"
+    "tryme": "bin/tryme.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -33,7 +33,9 @@
     "browserify": "2.4.2",
     "engine.io-stream": "git://github.com/shtylman/engine.io-stream#0d5b07",
     "spin": "git://github.com/shtylman/spin.js#00c03d",
-    "ios-overlay": "git://github.com/shtylman/iOS-Overlay#a73299"
+    "ios-overlay": "git://github.com/shtylman/iOS-Overlay#a73299",
+    "optimist": "~0.3.5",
+    "live-reload": "~0.2.0"
   },
   "engines": {
     "node": "0.8.x"
