@@ -13,7 +13,9 @@ var hljs = require('highlight.js');
 var main_js = browserify([__dirname + '/main_js.js']);
 
 // create a router for project files
-module.exports = function(wwwroot) {
+module.exports = function(wwwroot, argv) {
+    argv = argv || {}
+
 
     var static_serve = express.static(wwwroot);
 
@@ -133,7 +135,13 @@ module.exports = function(wwwroot) {
             }
 
             var out = module_src;
-            html = html.replace('{{body}}', src).replace('{{script}}', out);
+            var live_text = '<script src="http://localhost:' + argv.live +
+                '"></script>'
+            html = html
+                .replace('{{body}}', src)
+                .replace('{{script}}', out)
+                .replace('{{extra}}', argv.live ? live_text : '')
+
             return res.send(html);
         });
     }
