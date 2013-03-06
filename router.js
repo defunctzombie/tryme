@@ -1,6 +1,7 @@
 // builtin
 var fs = require('fs');
 var path = require('path');
+var domain = require('domain');
 
 // vendor
 var express = require('express');
@@ -9,11 +10,14 @@ var browserify = require('browserify');
 var mime = require('mime');
 var marked = require('marked');
 var hljs = require('highlight.js');
+var lsr = require('ls-r');
 
 var main_js = browserify([__dirname + '/main_js.js']);
 
 // create a router for project files
-module.exports = function(wwwroot) {
+module.exports = function(wwwroot, argv) {
+    argv = argv || {}
+
 
     var static_serve = express.static(wwwroot);
 
@@ -46,7 +50,7 @@ module.exports = function(wwwroot) {
         case 'text/x-markdown':
             return serve_markdown(full_path, res);
         case 'application/javascript':
-            return serve_javascript(full_path, res);
+            return serve_javascript(full_path, res, next);
         case 'text/css':
             return serve_css(full_path, res);
         }
@@ -80,15 +84,34 @@ module.exports = function(wwwroot) {
             }
         }
 
-        return res.send(404);
-    };
+        return render_index(base_path, res);
+    }
+
+    function render_index(base_path, res) {
+        lsr(base_path, function (err, _, stats) {
+            var files = stats.filter(function (s) {
+                return s.isFile()
+            })
+            var paths = files.map(function (s) {
+                return s.path
+            })
+            var rels = paths.map(function (uri) {
+                return path.relative(wwwroot, uri)
+            })
+            var links = rels.map(function (uri) {
+                return "<div><a href='/" + uri + "'>" + uri + "</a></div>"
+            })
+            var html = links.join("")
+            res.send(html)
+        })
+    }
 
     function serve_css(full_path, res) {
         res.contentType('text/css');
         res.send(npmcss(full_path));
     }
 
-    function serve_javascript(full_path, res) {
+    function serve_javascript(full_path, res, next) {
         // load up the template for markdown
         var html = fs.readFileSync(__dirname + '/views/javascript.html', 'utf8');
 
@@ -122,20 +145,40 @@ module.exports = function(wwwroot) {
         var tempjs = path.dirname(full_path) + '/__tryme.temp.js';
         fs.writeFileSync(tempjs, full_src);
 
-        var bundle = browserify(tempjs);
-        bundle.bundle(function(err, module_src) {
+        var d = domain.create()
+
+        d.run(function () {
+            var bundle = browserify(tempjs);
+
+            bundle.bundle(function(err, module_src) {
+                if (fs.existsSync(tempjs)) {
+                    fs.unlinkSync(tempjs);
+                }
+
+                if (err) {
+                    return next(err);
+                }
+
+                var out = module_src;
+                var live_text = '<script src="//localhost:' + argv.live +
+                    '"></script>'
+                html = html
+                    .replace('{{body}}', src)
+                    .replace('{{script}}', out)
+                    .replace('{{extra}}', argv.live ? live_text : '')
+
+                return res.send(html);
+            });
+        })
+
+        d.on("error", function (err) {
             if (fs.existsSync(tempjs)) {
                 fs.unlinkSync(tempjs);
             }
 
-            if (err) {
-                return next(err);
-            }
-
-            var out = module_src;
-            html = html.replace('{{body}}', src).replace('{{script}}', out);
-            return res.send(html);
-        });
+            console.error("browserify error failed", err)
+            next(err)
+        })
     }
 
     function serve_markdown(full_path, res) {
