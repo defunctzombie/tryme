@@ -14,7 +14,9 @@ var lsr = require('ls-r');
 var main_js = browserify([__dirname + '/main_js.js']);
 
 // create a router for project files
-module.exports = function(wwwroot) {
+module.exports = function(wwwroot, argv) {
+    argv = argv || {}
+
 
     var static_serve = express.static(wwwroot);
 
@@ -47,7 +49,7 @@ module.exports = function(wwwroot) {
         case 'text/x-markdown':
             return serve_markdown(full_path, res);
         case 'application/javascript':
-            return serve_javascript(full_path, res);
+            return serve_javascript(full_path, res, next);
         case 'text/css':
             return serve_css(full_path, res);
         }
@@ -108,7 +110,7 @@ module.exports = function(wwwroot) {
         res.send(npmcss(full_path));
     }
 
-    function serve_javascript(full_path, res) {
+    function serve_javascript(full_path, res, next) {
         // load up the template for markdown
         var html = fs.readFileSync(__dirname + '/views/javascript.html', 'utf8');
 
@@ -153,7 +155,13 @@ module.exports = function(wwwroot) {
             }
 
             var out = module_src;
-            html = html.replace('{{body}}', src).replace('{{script}}', out);
+            var live_text = '<script src="//localhost:' + argv.live +
+                '"></script>'
+            html = html
+            .replace('{{body}}', src)
+            .replace('{{script}}', out)
+            .replace('{{extra}}', argv.live ? live_text : '')
+
             return res.send(html);
         });
     }
