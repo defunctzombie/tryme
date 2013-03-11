@@ -9,6 +9,7 @@ var browserify = require('browserify');
 var mime = require('mime');
 var marked = require('marked');
 var hljs = require('highlight.js');
+var lsr = require('ls-r');
 
 var main_js = browserify([__dirname + '/main_js.js']);
 
@@ -80,8 +81,27 @@ module.exports = function(wwwroot) {
             }
         }
 
-        return res.send(404);
-    };
+        return render_index(base_path, res);
+    }
+
+    function render_index(base_path, res) {
+        lsr(base_path, function (err, _, stats) {
+            var files = stats.filter(function (s) {
+                return s.isFile()
+            })
+            var paths = files.map(function (s) {
+                return s.path
+            })
+            var rels = paths.map(function (uri) {
+                return path.relative(wwwroot, uri)
+            })
+            var links = rels.map(function (uri) {
+                return "<div><a href='/" + uri + "'>" + uri + "</a></div>"
+            })
+            var html = links.join("")
+            res.send(html)
+        })
+    }
 
     function serve_css(full_path, res) {
         res.contentType('text/css');
