@@ -4,7 +4,6 @@ var diff = require("diffpatcher/diff")
 var patch = require("diffpatcher/patch")
 var marked = require('marked');
 
-var render = require("./render")
 var CodeMirror = require("./code-mirror")
 
 CodeMirror.defaults.lineNumbers = true;
@@ -101,8 +100,13 @@ function mark(editor, line, id, content) {
   var view = document.getElementById("interactivate-out-" + id) || makeView(id)
   var body = view.querySelector(".cm-live-output-body")
   body.innerHTML = ""
-  if (content instanceof Element) body.appendChild(content)
-  else body.textContent = content
+  if (content instanceof Element) {
+    body.appendChild(content)
+  } else {
+    var pre = document.createElement("pre")
+    pre.textContent = JSON.stringify(content, null, "\t")
+    body.appendChild(pre)
+  }
 
   if (cursor.line === line) return markOnMove(editor, line, view)
 
