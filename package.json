@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/shtylman/tryme.git"
   },
-  "main": "./interactivate.js",
+  "main": "./server.js",
   "scripts": {
     "start": "node view.js"
   },
