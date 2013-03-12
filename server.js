@@ -66,7 +66,7 @@ module.exports = function(opts) {
     });
 
     if (opts.live) {
-        var port_port = opts.live = opts.live === true ? 9968 : opts.live
+        var live_port = opts.live = opts.live === true ? 9968 : opts.live
 
         LiveReloadServer({
             port: live_port
