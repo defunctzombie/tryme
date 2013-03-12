@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/shtylman/tryme.git"
   },
-  "main": "./interactivate.js",
+  "main": "./server.js",
   "scripts": {
     "start": "node view.js"
   },
@@ -30,13 +30,19 @@
     "marked": "0.2.7",
     "mime": "1.2.9",
     "highlight.js": "7.3.0",
-    "browserify": "2.4.2",
+    "browserify": "2.4.3",
     "engine.io-stream": "git://github.com/shtylman/engine.io-stream#0d5b07",
     "spin": "git://github.com/shtylman/spin.js#00c03d",
     "ios-overlay": "git://github.com/shtylman/iOS-Overlay#a73299",
+<<<<<<< HEAD
     "optimist": "0.3.5",
     "live-reload": "0.2.0",
     "ls-r": "0.2.1"
+=======
+    "ls-r": "0.2.1",
+    "live-reload": "0.2.0",
+    "optimist": "0.3.5"
+>>>>>>> 59b25a32f32baac6058d8d9dc09b693cf9746122
   },
   "engines": {
     "node": "0.8.x"

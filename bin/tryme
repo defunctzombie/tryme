@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+// simple server for previewing a single project
+// usage: tryme [options] /path/to/tryme/folder
+
+// builtin
+var path = require('path');
+var fs = require('fs');
+
+// vendor
+var argv = require('optimist').argv;
+
+// local
+var server = require('../server');
+
+var root = path.resolve(process.cwd(), argv._[0]);
+server({ root: root, live: argv.live });
+
+// vim: ft=javascript
