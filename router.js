@@ -118,6 +118,7 @@ module.exports = function(wwwroot, argv) {
         var src = fs.readFileSync(full_path, 'utf8');
 
         function server() {
+            window.require = require
             // emit a `client` event on the window with the given packet object
             function send(packet) {
                 var event = document.createEvent("CustomEvent")
@@ -128,7 +129,7 @@ module.exports = function(wwwroot, argv) {
                 var packet = event.detail
                 var result
                 try {
-                    result = eval(packet.source)
+                    result = window.eval(packet.source)
                 }
                 catch (error) {
                     result = error
