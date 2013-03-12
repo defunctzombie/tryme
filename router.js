@@ -1,6 +1,7 @@
 // builtin
 var fs = require('fs');
 var path = require('path');
+var domain = require('domain');
 
 // vendor
 var express = require('express');
@@ -117,6 +118,7 @@ module.exports = function(wwwroot, argv) {
         var src = fs.readFileSync(full_path, 'utf8');
 
         function server() {
+            window.require = require
             // emit a `client` event on the window with the given packet object
             function send(packet) {
                 var event = document.createEvent("CustomEvent")
@@ -127,7 +129,7 @@ module.exports = function(wwwroot, argv) {
                 var packet = event.detail
                 var result
                 try {
-                    result = eval(packet.source)
+                    result = window.eval(packet.source)
                 }
                 catch (error) {
                     result = error
@@ -144,26 +146,40 @@ module.exports = function(wwwroot, argv) {
         var tempjs = path.dirname(full_path) + '/__tryme.temp.js';
         fs.writeFileSync(tempjs, full_src);
 
-        var bundle = browserify(tempjs);
-        bundle.bundle(function(err, module_src) {
+        var d = domain.create()
+
+        d.run(function () {
+            var bundle = browserify(tempjs);
+
+            bundle.bundle(function(err, module_src) {
+                if (fs.existsSync(tempjs)) {
+                    fs.unlinkSync(tempjs);
+                }
+
+                if (err) {
+                    return next(err);
+                }
+
+                var out = module_src;
+                var live_text = '<script src="//localhost:' + argv.live +
+                    '"></script>'
+                html = html
+                    .replace('{{body}}', src)
+                    .replace('{{script}}', out)
+                    .replace('{{extra}}', argv.live ? live_text : '')
+
+                return res.send(html);
+            });
+        })
+
+        d.on("error", function (err) {
             if (fs.existsSync(tempjs)) {
                 fs.unlinkSync(tempjs);
             }
 
-            if (err) {
-                return next(err);
-            }
-
-            var out = module_src;
-            var live_text = '<script src="//localhost:' + argv.live +
-                '"></script>'
-            html = html
-            .replace('{{body}}', src)
-            .replace('{{script}}', out)
-            .replace('{{extra}}', argv.live ? live_text : '')
-
-            return res.send(html);
-        });
+            console.error("browserify error failed", err)
+            next(err)
+        })
     }
 
     function serve_markdown(full_path, res) {
