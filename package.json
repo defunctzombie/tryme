@@ -13,7 +13,7 @@
     "start": "node view.js"
   },
   "bin": {
-    "tryme": "bin/tryme.js"
+    "tryme": "bin/tryme"
   },
   "license": "MIT",
   "dependencies": {
