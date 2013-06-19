@@ -30,7 +30,7 @@ module.exports = function(wwwroot, argv) {
         // then decide base
         var full_path = path.join(wwwroot, req_path);
 
-        if (req.path === '/module-style.css') {
+        if (basename === 'module-style.css') {
             if (!pkginfo || !pkginfo.style) {
                 res.contentType('text/css');
                 res.send('');
