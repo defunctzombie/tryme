@@ -17,8 +17,9 @@ var main_js = browserify([__dirname + '/main_js.js']);
 module.exports = function(wwwroot, argv) {
     argv = argv || {}
 
-
     var static_serve = express.static(wwwroot);
+
+    var pkginfo = JSON.parse(fs.readFileSync(wwwroot + '/package.json'));
 
     return function(req, res, next) {
         var req_path = req.path;
@@ -29,6 +30,17 @@ module.exports = function(wwwroot, argv) {
         // then decide base
         var full_path = path.join(wwwroot, req_path);
 
+        if (req.path === '/module-style.css') {
+            if (!pkginfo || !pkginfo.style) {
+                res.contentType('text/css');
+                res.send('');
+                return;
+            }
+
+            var csspath = path.join(wwwroot, pkginfo.style);
+            return serve_css(csspath, res);
+        }
+
         if (!fs.existsSync(full_path)) {
             return res.send(404);
         }
@@ -36,7 +48,6 @@ module.exports = function(wwwroot, argv) {
         if (fs.statSync(full_path).isDirectory()) {
             return decide_base(req, res, next);
         }
-
 
         // we don't know what type of file to serve
         if (!basename) {
@@ -221,7 +232,7 @@ module.exports = function(wwwroot, argv) {
             }
 
             if (err) {
-                return next(err);
+                return res.send(err.message);
             }
 
             var out = module_src;
