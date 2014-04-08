@@ -3,7 +3,6 @@
 var diff = require("diffpatcher/diff")
 var patch = require("diffpatcher/patch")
 var marked = require('marked');
-var Element = window.Element;
 
 var CodeMirror = require("./code-mirror")
 
@@ -101,7 +100,7 @@ function mark(editor, line, id, content) {
   var view = document.getElementById("interactivate-out-" + id) || makeView(id)
   var body = view.querySelector(".cm-live-output-body")
   body.innerHTML = ""
-  if (content instanceof Element) {
+  if (content.nodeType && content.nodeName) {
     body.appendChild(content)
   } else {
     var pre = document.createElement("pre")
